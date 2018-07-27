@@ -9,5 +9,8 @@
 #import <React/RCTBridgeModule.h>
 
 @interface CustomKeyboard : NSObject <RCTBridgeModule>
+
+@property (nonatomic) NSMutableDictionary * dicInputMaxLength;
+
 @end
 

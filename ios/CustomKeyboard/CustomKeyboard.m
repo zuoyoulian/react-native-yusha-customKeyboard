@@ -13,7 +13,7 @@
 }
 RCT_EXPORT_MODULE(CustomKeyboard)
 
-RCT_EXPORT_METHOD(install:(nonnull NSNumber *)reactTag withType:(nonnull NSString *)keyboardType)
+RCT_EXPORT_METHOD(install:(nonnull NSNumber *)reactTag withType:(nonnull NSString *)keyboardType maxLength:(int) maxLength)
 {
     UIView* inputView = [[RCTRootView alloc] initWithBridge:_bridge moduleName:@"CustomKeyboard" initialProperties:
                          @{
@@ -22,6 +22,11 @@ RCT_EXPORT_METHOD(install:(nonnull NSNumber *)reactTag withType:(nonnull NSStrin
                            }
                          ];
     
+    if (_dicInputMaxLength == nil) {
+        _dicInputMaxLength = [NSMutableDictionary dictionaryWithCapacity:0];
+    }
+    
+    [_dicInputMaxLength setValue:[NSNumber numberWithInt:maxLength] forKey:[reactTag stringValue]];
     inputView.autoresizingMask = UIViewAutoresizingNone;
     inputView.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 252);
     
@@ -41,7 +46,13 @@ RCT_EXPORT_METHOD(uninstall:(nonnull NSNumber *)reactTag)
 
 RCT_EXPORT_METHOD(insertText:(nonnull NSNumber *)reactTag withText:(NSString*)text) {
     UITextField *view = (UITextField *)(((RCTBaseTextInputView*)[_bridge.uiManager viewForReactTag:reactTag]).backedTextInputView);
-    
+    if (_dicInputMaxLength != nil) {
+        NSString *textValue = [NSString stringWithFormat:@"%@", view.text];
+        int  maxLegth = [_dicInputMaxLength[reactTag.stringValue] intValue];
+        if ([textValue length] >= maxLegth) {
+            return;
+        }
+    }
     [view replaceRange:view.selectedTextRange withText:text];
 }
 

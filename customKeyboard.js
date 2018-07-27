@@ -107,11 +107,12 @@ export class CustomTextInput extends Component {
   }
   componentDidMount() {
     this.installTime = setTimeout(()=>{
-        install(findNodeHandle(this.input), this.props.customKeyboardType);
-
         if(Platform.OS === 'android') {
-            this.showSub = addKeyBoardShowListener(this._showKeyboard);
-            this.hideSub = addKeyBoardHideListener(this._hideKeyboard);
+          install(findNodeHandle(this.input), this.props.customKeyboardType);
+          this.showSub = addKeyBoardShowListener(this._showKeyboard);
+          this.hideSub = addKeyBoardHideListener(this._hideKeyboard);
+        } else {
+          install(findNodeHandle(this.input), this.props.customKeyboardType, this.props.maxLength === undefined ? 1024 : this.props.maxLength);
         }
 
         AppState.addEventListener('change', this._handleAppStateChange);
@@ -136,7 +137,11 @@ _handleAppStateChange = (nextAppState: string) => {
 
   componentWillReceiveProps(newProps) {
     if (newProps.customKeyboardType !== this.props.customKeyboardType) {
-      install(findNodeHandle(this.input), newProps.customKeyboardType);
+      if(Platform.OS === 'android') {
+        install(findNodeHandle(this.input), newProps.customKeyboardType);
+      } else {
+        install(findNodeHandle(this.input), newProps.customKeyboardType, newProps.maxLength === undefined ? 1024 : this.props.maxLength);
+      }
     }
     if (newProps.value !== null && newProps.value !== undefined && newProps.value !== this.state.text) {
       this.setState({text: newProps.value})
@@ -165,10 +170,11 @@ _handleAppStateChange = (nextAppState: string) => {
 
   render() {
     const { customKeyboardType, ...others } = this.props;
-    return <TextInput {...others}
+    return <TextInput 
                       ref={this.onRef}
                       onChangeText={this._onChangeText}
                       value={this.state.text}
+                      {...others}
     />;
   }
 }
